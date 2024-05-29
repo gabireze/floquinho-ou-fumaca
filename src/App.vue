@@ -6,7 +6,7 @@
     <div class="flex flex-col items-center w-full">
       <div class="w-full flex justify-center items-center">
         <Flipbook
-          class="flipbook w-full lg:w-11/12 h-full lg:h-11/12"
+          class="flipbook"
           :pages="pages"
           :pagesHiRes="pagesHiRes"
           :flipDuration="1000"
@@ -228,11 +228,6 @@ export default {
 }
 
 .flipbook .viewport {
-  width: 90vw;
-  height: 90vh;
-}
-
-.viewport {
   width: 90vw;
   height: 90vh;
 }
