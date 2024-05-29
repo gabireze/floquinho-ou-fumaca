@@ -122,7 +122,7 @@ import Flipbook from "flipbook-vue";
 
 async function importAllImages() {
   const images = [null]; // Primeiro elemento é null
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 22; i++) {
     const image = await import(`@/assets/images/${i}.png`);
     images.push(image.default);
   }
