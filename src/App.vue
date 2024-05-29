@@ -1,53 +1,112 @@
 <template>
-  <div id="app">
-    <v-container class="ma-0 pa-0" justify-center>
-      <v-layout row>
-        <v-flex class="ma-0 pa-0">
-          <Flipbook
-            class="flipbook"
-            :pages="pages"
-            :pagesHiRes="pagesHiRes"
-            v-slot="flipbook"
-            ref="flipbook"
+  <div
+    id="app"
+    class="min-h-screen flex flex-col items-center bg-gray-800 text-gray-200 overflow-hidden"
+  >
+    <div class="flex flex-col items-center w-full">
+      <div class="w-full flex justify-center items-center">
+        <Flipbook
+          class="flipbook w-full lg:w-11/12 h-full lg:h-11/12"
+          :pages="pages"
+          :pagesHiRes="pagesHiRes"
+          :flipDuration="1000"
+          :zoomDuration="500"
+          :zooms="[1, 2, 4]"
+          :ambient="0.4"
+          :gloss="0.6"
+          :perspective="2400"
+          :nPolygons="10"
+          :singlePage="false"
+          :forwardDirection="'right'"
+          :centering="true"
+          :startPage="1"
+          :loadingImage="null"
+          :clickToZoom="true"
+          :dragToFlip="true"
+          :wheel="'zoom'"
+          v-slot="flipbook"
+          ref="flipbook"
+        >
+          <div
+            class="action-bar flex flex-col sm:flex-row justify-center items-center mt-4 mb-4 gap-2"
           >
-            <v-flex xs12 class="pt-2 action-bar text-xs-center">
+            <div class="flex items-center gap-2">
               <font-awesome-icon
-                class="ma-1 btn left"
-                :class="{ disabled: !flipbook.canFlipLeft }"
-                icon="chevron-circle-left"
-                size="lg"
-                @click="flipbook.flipLeft"
-              ></font-awesome-icon>
-              <font-awesome-icon
-                class="ma-1 btn minus"
-                :class="{ disabled: !flipbook.canZoomOut }"
+                class="btn minus"
+                :class="{
+                  'text-gray-500 cursor-not-allowed': !flipbook.canZoomOut,
+                }"
                 icon="minus-circle"
                 size="lg"
                 @click="flipbook.zoomOut"
               ></font-awesome-icon>
-              <span class="ma-1 font-weight-medium subheading" style="margin-left: 10px; margin-right: 5px;">Page</span>
-              <span class="font-weight-medium subheading">{{ flipbook.page }}</span>
-              <span class="font-weight-medium subheading">&nbsp;of&nbsp;</span>
-              <span class="mr-1 font-weight-medium subheading">{{ flipbook.numPages }}</span>
+              <span class="text-lg">Zoom</span>
               <font-awesome-icon
-                class="ma-1 btn plus"
-                :class="{ disabled: !flipbook.canZoomIn }"
+                class="btn plus"
+                :class="{
+                  'text-gray-500 cursor-not-allowed': !flipbook.canZoomIn,
+                }"
                 icon="plus-circle"
                 size="lg"
                 @click="flipbook.zoomIn"
               ></font-awesome-icon>
+            </div>
+            <div class="flex items-center gap-2">
               <font-awesome-icon
-                class="ma-1 btn right"
-                :class="{ disabled: !flipbook.canFlipRight }"
+                class="btn left"
+                :class="{
+                  'text-gray-500 cursor-not-allowed': flipbook.page === 1,
+                }"
+                icon="chevron-circle-left"
+                size="lg"
+                @click="flipbook.flipLeft"
+              ></font-awesome-icon>
+              <span class="font-medium text-lg">
+                Página {{ flipbook.page }} de {{ flipbook.numPages }}
+              </span>
+              <font-awesome-icon
+                class="btn right"
+                :class="{
+                  'text-gray-500 cursor-not-allowed':
+                    flipbook.page === flipbook.numPages,
+                }"
                 icon="chevron-circle-right"
                 size="lg"
                 @click="flipbook.flipRight"
               ></font-awesome-icon>
-            </v-flex>
-          </Flipbook>
-        </v-flex>
-      </v-layout>
-    </v-container>
+            </div>
+            <div class="flex items-center gap-2 hidden lg:flex">
+              <button
+                class="btn"
+                @click="flipToStart"
+                :disabled="flipbook.page === 1"
+              >
+                Primeira Página
+              </button>
+              <button
+                class="btn"
+                @click="flipToEnd"
+                :disabled="flipbook.page === flipbook.numPages"
+              >
+                Última Página
+              </button>
+            </div>
+            <div class="flex items-center gap-2 hidden lg:flex">
+              <input
+                type="number"
+                class="p-2 bg-gray-700 text-white rounded"
+                min="1"
+                :max="flipbook.numPages"
+                v-model.number="goToPageNumber"
+                @keydown.enter="flipToPage"
+                @change="flipToPage"
+              />
+              <button class="btn" @click="flipToPage">Ir para Página</button>
+            </div>
+          </div>
+        </Flipbook>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -56,7 +115,7 @@ import Flipbook from "flipbook-vue";
 
 async function importAllImages() {
   const images = [null]; // Primeiro elemento é null
-  for (let i = 1; i <= 18; i++) {
+  for (let i = 1; i <= 20; i++) {
     const image = await import(`@/assets/images/${i}.png`);
     images.push(image.default);
   }
@@ -66,18 +125,35 @@ async function importAllImages() {
 export default {
   name: "App",
   components: {
-    Flipbook
+    Flipbook,
   },
   data() {
     return {
       pages: [],
-      pagesHiRes: []
+      pagesHiRes: [],
+      goToPageNumber: 1,
     };
   },
   async created() {
     const images = await importAllImages();
     this.pages = images;
     this.pagesHiRes = images; // Pode ser diferente se você tiver resoluções altas separadas
+  },
+  methods: {
+    flipToStart() {
+      this.$refs.flipbook.goToPage(1);
+    },
+    flipToEnd() {
+      this.$refs.flipbook.goToPage(this.$refs.flipbook.numPages);
+    },
+    flipToPage() {
+      if (
+        this.goToPageNumber >= 1 &&
+        this.goToPageNumber <= this.$refs.flipbook.numPages
+      ) {
+        this.$refs.flipbook.goToPage(this.goToPageNumber);
+      }
+    },
   },
   mounted() {
     window.addEventListener("keydown", (ev) => {
@@ -89,7 +165,7 @@ export default {
         flipbook.flipRight();
       }
     });
-  }
+  },
 };
 </script>
 
@@ -113,36 +189,47 @@ export default {
   align-items: center;
   margin-top: 16px;
   margin-bottom: 16px;
+  gap: 16px;
 }
 
-.action-bar .btn {
+.btn {
+  background-color: #444;
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
-.action-bar .btn svg {
-  bottom: 0;
+
+.btn:disabled {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
 }
-.action-bar .btn:not(:first-child) {
-  margin-left: 10px;
-}
-.has-mouse .action-bar .btn:hover {
+
+.has-mouse .btn:hover {
+  background-color: #555;
   color: #ccc;
   filter: drop-shadow(1px 1px 5px #000);
   cursor: pointer;
 }
-.action-bar .btn:active {
+
+.btn:active {
   filter: none !important;
 }
-.action-bar .btn.disabled {
+
+.btn.disabled {
   color: #666;
   pointer-events: none;
 }
+
 .flipbook {
   width: 90vw;
-  height: 90vh;
+  height: 80vh;
 }
 
 .flipbook .viewport {
   width: 90vw;
-  height: calc(100vh - 50px - 40px);
+  height: 90vh;
 }
 
 .flipbook .bounding-box {
