@@ -232,6 +232,11 @@ export default {
   height: 90vh;
 }
 
+.viewport {
+  width: 90vw;
+  height: 90vh;
+}
+
 .flipbook .bounding-box {
   box-shadow: 0 0 20px #000;
 }
