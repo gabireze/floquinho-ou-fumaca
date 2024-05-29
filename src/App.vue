@@ -3,7 +3,14 @@
     id="app"
     class="min-h-screen flex flex-col items-center bg-gray-800 text-gray-200 overflow-hidden"
   >
-    <div class="flex flex-col items-center w-full">
+    <div
+      v-if="isLoading"
+      class="flex flex-col items-center justify-center w-full h-full"
+    >
+      <div class="loader"></div>
+      <p>Carregando...</p>
+    </div>
+    <div v-else class="flex flex-col items-center w-full">
       <div class="w-full flex justify-center items-center">
         <Flipbook
           class="flipbook"
@@ -132,12 +139,14 @@ export default {
       pages: [],
       pagesHiRes: [],
       goToPageNumber: 1,
+      isLoading: true,
     };
   },
   async created() {
     const images = await importAllImages();
     this.pages = images;
     this.pagesHiRes = images; // Pode ser diferente se você tiver resoluções altas separadas
+    this.isLoading = false;
   },
   methods: {
     flipToStart() {
@@ -181,6 +190,24 @@ export default {
   background-color: #333;
   color: #ccc;
   overflow: hidden;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #2b004f;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .action-bar {
